@@ -104,14 +104,15 @@ module load #(parameter width = 6)
     input clk,
     input rst,
     input load,
-    output reg [width:0] count
+    input [width-1 :0] load_val,
+    output reg [width-1:0] count
     );
     always@(posedge clk)
         if (rst)
             count <= 0;
         else 
             if (load) 
-                count <= 6'd31;
+                count <= load_val
             else 
                 count <= count - 1;
 endmodule
