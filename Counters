@@ -1,0 +1,251 @@
+
+/////////   Write a Verilog code for a 4-bit synchronous up counter with asynchronous reset? ////// 
+
+module up_counter(
+            input clk,
+            input ay_rst,
+            output reg [3:0] count          
+    );
+always@(posedge(clk) or posedge ay_rst) begin
+    if(ay_rst==1) begin
+        count<=0;
+    end else begin
+        count<=count+1'b1;
+    end
+end
+endmodule
+
+
+///////    Write a Verilog code for a 4-bit down counter with synchronous reset and enable signal ? /////
+
+module down_counter(
+        input clk,
+        input sy_rst,
+        input en,
+        output reg [3:0] count 
+        );
+        always@(posedge clk) begin
+            if (sy_rst) 
+                count <= 15;
+            else 
+                if (en) 
+                    count <= count - 1;
+                else 
+                    count <= count;
+       end
+endmodule
+
+///////  Design a 3-bit modulo-6 counter in Verilog (counts from 0 to 5) ? //////
+
+module mod_6 (
+    input clk,
+    input rst,
+    output reg [2:0] count
+    );
+    reg [2:0] temp;
+    always@(posedge clk) begin
+        if (rst) begin
+            temp <= 0;
+            count <= 0;
+        end else begin
+            if (temp < 5 ) begin
+                count <= count + 1;
+                temp <= temp + 1;
+            end else
+                temp <= 0;
+                count <= 0;
+        end  
+   end 
+endmodule
+
+//////  Write a Verilog code for an 4 bit up-down counter with direction control (input: dir) ? ////
+
+module up_down(
+        input clk,
+        input rst,
+        input dir,
+        output reg [3:0] count
+        );
+        always@(posedge clk) begin
+            if ( rst ) begin
+                count <= 0;
+            end else begin
+                if (dir == 1 )
+                    count = count + 1;
+                else 
+                    count = count - 1;
+            end
+       end         
+endmodule
+
+//////  Design a Gray code counter in Verilog (4-bit) ?  //////
+
+module gray__counter(
+    input clk,
+    input rst,
+    output reg [3:0] gc
+    );
+reg [3:0]binary;
+always@(posedge(clk)) begin
+    if(rst) begin
+        gc <= 0;
+        binary <= 0;
+    end else begin
+        binary <= binary +1'd1;
+        gc<= binary ^ (binary >>1);
+    end
+end
+endmodule
+
+///// Implement a 4-bit counter with load functionality: load a value when load=1 ? ////
+
+module load #(parameter width = 6)
+(
+    input clk,
+    input rst,
+    input load,
+    output reg [width:0] count
+    );
+    always@(posedge clk)
+        if (rst)
+            count <= 0;
+        else 
+            if (load) 
+                count <= 6'd31;
+            else 
+                count <= count - 1;
+endmodule
+
+////// Write a Verilog code for a BCD counter (0-9) with synchronous reset ///
+
+module bcd(
+    input clk,
+    input rst,
+    output reg [4:0] bcd_out
+    );
+    always@(posedge clk) begin
+        if(rst) begin
+            bcd_out <= 0;
+        end else 
+            if (bcd_out <9) 
+                bcd_out <= bcd_out + 1;
+            else 
+                bcd_out <= 0;
+            
+   end        
+endmodule 
+
+///////Write a Verilog code to divide a clock by 2 using a D flip-flop ? ////
+
+module division_2(
+    input clk,
+    input rst,
+    output reg clk_out
+    );
+    
+    always@(posedge clk) begin
+        if (rst) 
+            clk_out <= 0;
+        else
+            clk_out <= ~clk_out;
+    end 
+endmodule
+
+////// Write a Verilog code to divide a clock by 4 using a 2-bit counter ? ////
+
+module div_4(
+    input clk,
+    input rst,
+    output clk_out
+    );
+    reg [1:0] count;
+    always@(posedge clk) begin
+        if (rst) begin
+            count <= 0;
+        end else 
+            count <= count+1;
+    end
+    assign clk_out = count[1];  
+endmodule
+
+///// Write Verilog code to divide a clock by 10 using a modulo-10 counter? ////
+
+module div_10 (
+    input clk,
+    input rst,
+    output reg clk_out
+);
+    reg [3:0] count;
+
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            count <= 4'd0;
+            clk_out <= 1'b0;
+        end else begin
+            if (count == 4'd4) begin
+                clk_out <= ~clk_out;  // Toggle output every 5 cycles
+                count <= 4'd0;
+            end else begin
+                count <= count + 1;
+            end
+        end
+    end
+endmodule
+
+////// Write a Verilog module that outputs divide-by-2, divide-by-4, and divide-by-8 clocks ? ///////
+
+module div(
+    input clk,
+    input rst,
+    output reg div_2,
+    output reg div_4,
+    output reg div_8
+    );
+    reg [3:0] count;
+    always@(posedge clk) begin
+        if (rst) begin
+            count <= 0;
+            div_2 <= 0;
+            div_4 <= 0;
+            div_8 <= 0;
+        end else begin
+            if (count <8) begin
+                count <= count +1;
+                div_2 <= count[0];
+                div_4 <= count[1];
+                div_8 <= count[2];
+           end else
+                count <= 0;
+           
+        end
+   end
+endmodule
+
+/////// Write Verilog code to divide a clock by an odd number (like 5). How do you manage duty cycle here? /////
+
+module div_5(
+    input clk,
+    input rst,
+    output clk_out
+    );
+    reg [2:0] count;
+    reg d,q;
+    always@(posedge clk) begin
+        if(rst) begin
+            count <= 0;
+        end else 
+            if (count <4) begin
+                count <= count +1;
+            end else
+                count <=0;
+   end
+   always@(negedge clk) begin
+        if (rst)
+            d <= 0;
+        else 
+            d = count[1];
+            q <= d;
+   end
+   assign clk_out = count[1] | q;
+endmodule
+
