@@ -1,0 +1,219 @@
+//////// Write a Verilog module for an 8-bit register with synchronous reset? ///////
+
+module Reg_8(
+    input clk,
+    input rst,
+    input [7:0] d,
+    output reg [7:0] q
+    );
+    always@(posedge clk) begin
+        if (rst)
+            q <= 0;
+        else
+            q <= d;
+    end 
+endmodule
+
+///    Write a Verilog module for a 4-bit load-enabled register ? //////
+
+module Reg_4(
+    input clk,
+    input rst,
+    input en, 
+    input load,
+    input [3:0] d,
+    output reg [3:0] q
+    );
+    reg [3:0] temp;
+    always@(posedge clk) begin
+        if (rst)
+            q <= 0;
+        else begin
+            if (load) begin
+                temp <= d;
+                if(en) 
+                    q <= temp;
+             end 
+        end
+   end
+endmodule
+
+///////////////  Create a register that resets asynchronously and loads data synchronously ? ///////////
+
+module Reg(
+    input clk,
+    input rst,
+    input load,
+    input [3:0] d,
+    output reg [3:0] q
+    );
+    always@(posedge clk or posedge rst) begin
+        if (rst)
+            q <= 0;
+        else begin
+            if (load)
+                    q <= d;
+        end 
+    end
+endmodule
+
+///////// Write Verilog code for a 16x8 register file with 1 write port and 2 read ports? ////////////
+
+module reg_16x8(
+    input clk,
+    input rst,
+    input write,
+    input [3:0] wr_addr,
+    input [3:0] rd_addr1,
+    input [3:0] rd_addr2,
+    input [7:0] write_data,
+    output reg [7:0] rd1,
+    output reg [7:0] rd2
+    );
+    reg [7:0] mem[15:0];
+    integer i;
+    always@(posedge clk) begin
+        if (rst) begin
+            for(i=0; i<16; i=i+1) 
+                mem[i] <= 0;
+        end else begin
+            if (write)
+                mem[wr_addr] <= write_data;
+            else begin
+                rd1 <= mem[rd_addr1];
+                rd2 <= mem[rd_addr2];
+            end
+        end
+    end
+endmodule
+
+////////// Design a 32-bit shift register with serial input and parallel output?  ////
+
+module sp(
+    input clk,
+    input rst,
+    input d,
+    output reg [31:0] q
+    );
+    always@(posedge clk) begin
+        if (rst)
+            q <= 0;
+        else begin
+            q <= {q[30:0], d};
+        end
+    end
+endmodule
+
+/////// Design a 4-bit shift register with serial and serial output?
+    
+module ss(
+    input clk,
+    input rst,
+    input d,
+    output  q
+    );
+    reg [3:0] temp;
+    always@(posedge clk) begin
+        if (rst)
+            temp <= 0;
+        else begin
+            temp <= {temp[2:0], d};
+        end
+    end
+    
+    assign q = temp[3];
+endmodule 
+    
+/////////  Design a 4-bit shift register with parallel in and parallel output? ////////
+
+module pp (
+    input clk,
+    input rst,
+    input [3:0] p_in,
+    output reg [3:0] p_out
+           );
+    
+    always@(posedge clk) begin
+        if (rst) 
+            p_out <= 0;
+        else 
+            p_out <= p_in;
+    end
+endmodule
+            
+/////////  Design a 4-bit shift register with parallel in and serial output? ////////            
+ 
+module ps (       
+    input clk,
+    input rst,
+    input load,
+    input [3:0] d,
+    output reg p
+    );
+    reg [3:0] temp;
+    always@(posedge clk) begin
+        if(rst) begin
+            temp <= 0;
+            p <= 0;
+        end else begin
+            if (load) 
+                    temp <= d;
+            else begin
+                    temp <= temp << 1;          // Shift left
+                    p <= temp[3];      // Output MSB as serial
+        end
+   end
+end
+endmodule
+     
+////////  Design a 4-bit shift register with Universal Shift register? ////////     
+    
+module Universal_Shift(
+    input clk,
+    input rst,
+    input load,
+    input [1:0] s,       // Mode select
+    input d,             // Serial input for SISO/SIPO
+    input [3:0] p_in,    // Parallel input
+    output reg [3:0] a,  // Output (parallel or serial depending on mode)
+    output reg serial_out // For PISO or SISO output
+);
+
+reg [3:0] temp;
+
+always @(posedge clk or posedge rst) begin
+    if (rst) begin
+        a <= 4'b0000;
+        temp <= 4'b0000;
+        serial_out <= 1'b0;
+    end else begin
+        case(s)
+            2'b00: begin // PIPO
+                a <= p_in;
+            end
+
+            2'b01: begin // SISO
+                temp <= {temp[2:0], d};     // Shift left, serial in
+                serial_out <= temp[3];      // Serial out
+            end
+
+            2'b10: begin // SIPO
+                temp <= {temp[2:0], d};     // Shift left, serial in
+                a <= temp;
+            end
+
+            2'b11: begin // PISO
+                if (load) 
+                    temp <= a;
+                else begin
+                    temp <= temp << 1;          // Shift left
+                    serial_out <= temp[3];      // Output MSB as serial
+                end
+            end
+        endcase
+    end
+end
+
+endmodule
+
+            
