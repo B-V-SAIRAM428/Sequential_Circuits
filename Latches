@@ -1,0 +1,296 @@
+///////  Write a Verilog module for a D-latch using behavioral modeling? ////////
+
+module D_latch(
+    input en,
+    input d,
+    output reg q,
+    output qn
+    );
+    
+    always@(en) begin
+        if (en)
+            q = d;
+        else
+            q = q;
+    end
+assign qn = ~q;
+endmodule
+
+//////// Write a Verilog code for an SR latch using gates (structural modeling) ? /////
+
+module SR_latch(
+        input en,
+        input s,r,
+        output wire q,
+        output qn 
+        );
+        
+        wire [2:0] out;
+       
+        assign out[0] = s & en;
+        assign out[1] = r & en;
+        assign q = qn & out[0];
+        assign qn = q & out[1];
+
+endmodule
+
+////////// Given a code snippet that has an incomplete if-else, identify if a latch will be inferred ? ////////
+
+module latch(
+    input en,
+    input d,
+    output  reg a 
+        );
+    
+    always @(*) begin
+
+        if (en) 
+            a = d;
+    end
+endmodule
+
+
+////////   Write Verilog code to model a transparent latch with enable and active-low reset?
+
+module transparent(
+        input en,
+        input rst,
+        input d, 
+        output reg q
+        );
+        wire qn;
+        
+        always@(*) begin
+            if (~rst)
+                q = 0;
+             else 
+                if (en) begin
+                    q = d;
+                end else
+                    q = q;
+        end
+endmodule 
+                
+////////// Write Verilog code for a gated SR latch using behavioral modeling? /////
+module bev_sr(
+    input en,
+    input s,r,
+    output reg q
+    );
+    wire qn;
+    always@(*) begin
+        if(en) begin
+            case({s,r}) 
+                2'b00: 
+                    q = q;
+                2'b01:
+                    q = 0;
+                2'b10:
+                    q = 1;
+                2'b11:
+                    q = 1'bx;
+            endcase
+       end
+   end
+   assign qn = ~q;
+endmodule
+
+///////// Write the Verilog code for all the latch using asynchronous reset? //////
+
+module SR_asy(
+    input en,
+    input asy_rst,
+    input s,r,
+    output reg q,
+    output qn
+    );
+    always@(*) begin
+        if(asy_rst) 
+            q = 0 ;
+        else begin
+            if(en) begin
+                case({s,r}) 
+                    2'b00: 
+                        q = q;
+                    2'b01:
+                        q = 0;
+                    2'b10:
+                        q = 1;
+                    2'b11:
+                        q = 1'bx;
+                endcase
+            end
+       end
+   end
+   assign qn = ~q;
+endmodule
+
+
+module JK_asy(
+    input en,
+    input asy_rst,
+    input j,k,
+    output reg q,
+    output qn
+    );
+    always@(*) begin
+        if(asy_rst) 
+            q = 0 ;
+        else begin
+            if(en) begin
+                case({j,k}) 
+                    2'b00: 
+                        q = q;
+                    2'b01:
+                        q = 0;
+                    2'b10:
+                        q = 1;
+                    2'b11:
+                        q = ~q;
+                endcase
+            end
+       end
+   end
+   assign qn = ~q;
+endmodule
+
+module D_asy(
+    input en,
+    input asy_rst,
+    input d,
+    output reg q,
+    output qn
+    );
+    always@(*) begin
+        if(asy_rst) 
+            q = 0 ;
+        else begin
+            if(en)
+               q = d;
+       end
+   end
+   assign qn = ~q;
+endmodule
+
+module T_asy(
+    input en,
+    input asy_rst,
+    input t,
+    output reg q,
+    output qn
+    );
+    always@(*) begin
+        if(asy_rst) 
+            q = 0 ;
+        else begin
+            if(en) begin
+               case(t)
+                1'b1: begin
+                    q = ~q;
+                end
+                endcase
+            end
+            else 
+               q = q;
+       end
+   end
+   assign qn = ~q;
+endmodule
+
+/////////////// Write the Verilog code for all the latch using synchronous reset? //////
+
+/// it used for learning purpose only and used for some special cases only
+module SR_sy(
+    input en,
+    input sy_rst,
+    input s,r,
+    output reg q,
+    output qn
+    );
+    always@(*) begin
+        if(en) begin
+            if(sy_rst) 
+                q =0 ;
+            else begin
+                case({s,r}) 
+                    2'b00: 
+                        q = q;
+                    2'b01:
+                        q = 0;
+                    2'b10:
+                        q = 1;
+                    2'b11:
+                        q = 1'bx;
+                endcase
+            end
+       end
+   end
+   assign qn = ~q;
+endmodule
+
+
+module JK_sy(
+    input en,
+    input sy_rst,
+    input j,k,
+    output reg q,
+    output qn
+    );
+    always@(*) begin
+        if(en) 
+            if(sy_rst) 
+                q =0 ;
+            else begin
+                case({j,k}) 
+                    2'b00: 
+                        q = q;
+                    2'b01:
+                        q = 0;
+                    2'b10:
+                        q = 1;
+                    2'b11:
+                        q = ~q;
+                endcase
+            end
+       end
+   assign qn = ~q;
+endmodule
+
+module D_sy(
+    input en,
+    input sy_rst,
+    input d,
+    output reg q,
+    output qn
+    );
+    always@(*) begin
+        if(en) 
+            if(sy_rst)
+                q = 0;
+            else
+                q = d;
+       end
+   assign qn = ~q;
+endmodule
+
+module T_sy(
+    input en,
+    input sy_rst,
+    input t,
+    output reg q,
+    output qn
+    );
+    always@(*) begin
+        if(en) 
+            if(sy_rst) 
+                q = 0;
+            else begin
+               case(t)
+                1'b1: begin
+                    q = ~q;
+                end
+                endcase
+            end
+       end
+   assign qn = ~q;
+endmodule
