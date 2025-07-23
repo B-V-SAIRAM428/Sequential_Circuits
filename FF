@@ -1,0 +1,271 @@
+///////////Write Verilog code for all FF Which have a positive-edge triggered and asynchronous reset? /////
+
+module d_ff_asy(
+    input clk,
+    input rst,
+    input d,
+    output reg q,
+    output qn
+    );
+
+    always@(posedge clk or rst) begin
+        if (rst) begin
+            q = 0;
+        end else
+            q <= d;
+    end
+    
+    assign qn = ~q;
+endmodule
+
+module jk_ff_asy(
+    input clk,
+    input rst,
+    input j,k,
+    output reg q,
+    output qn
+    );
+    
+    always@(posedge clk or rst) begin
+        if(rst) 
+            q = 0;
+        else begin
+            case({j,k})
+                2'b00: q <= q;
+                2'b01: q <= 0;
+                2'b10: q <= 1;
+                2'b11: q <= ~q;
+             endcase
+        end
+    end
+    
+    assign qn = ~q;
+endmodule
+
+module sr_ff_asy(
+    input clk,
+    input rst,
+    input s,r,
+    output reg q,
+    output qn
+    );
+    
+    always@(posedge clk or rst ) begin
+        if(rst) 
+            q = 0;
+        else begin
+            case({s,r})
+                2'b00: q <= q;
+                2'b01: q <= 0;
+                2'b10: q <= 1;
+                2'b11: q <= 1'bx;
+             endcase
+        end
+    end
+    
+    assign qn = ~q;
+endmodule
+
+module t_ff_asy(
+    input clk,
+    input rst,
+    input t,
+    output reg q,
+    output qn
+    );
+    
+    always@(posedge clk or rst) begin
+        if (rst)
+            q = 0;
+        else begin
+            if (t) 
+                q <= ~q; 
+            else
+                q <= q;
+        end
+   end
+   
+   assign qn = ~q;
+endmodule
+
+///////////Write Verilog code for all FF Which have a positive-edge triggered and synchronous reset? /////
+
+module d_ff_sy(
+    input clk,
+    input rst,
+    input d,
+    output reg q,
+    output qn
+    );
+
+    always@(posedge clk ) begin
+        if (rst) begin
+            q = 0;
+        end else
+            q <= d;
+    end
+    
+    assign qn = ~q;
+endmodule
+
+module jk_ff_sy(
+    input clk,
+    input rst,
+    input j,k,
+    output reg q,
+    output qn
+    );
+    
+    always@(posedge clk) begin
+        if(rst) 
+            q = 0;
+        else begin
+            case({j,k})
+                2'b00: q <= q;
+                2'b01: q <= 0;
+                2'b10: q <= 1;
+                2'b11: q <= ~q;
+             endcase
+        end
+    end
+    
+    assign qn = ~q;
+endmodule
+
+module sr_ff_sy(
+    input clk,
+    input rst,
+    input s,r,
+    output reg q,
+    output qn
+    );
+    
+    always@(posedge clk ) begin
+        if(rst) 
+            q = 0;
+        else begin
+            case({s,r})
+                2'b00: q <= q;
+                2'b01: q <= 0;
+                2'b10: q <= 1;
+                2'b11: q <= 1'bx;
+             endcase
+        end
+    end
+    
+    assign qn = ~q;
+endmodule
+
+module t_ff_sy(
+    input clk,
+    input rst,
+    input t,
+    output reg q,
+    output qn
+    );
+    
+    always@(posedge clk ) begin
+        if (rst)
+            q = 0;
+        else begin
+            if (t) 
+                q <= ~q; 
+            else
+                q <= q;
+        end
+   end
+   
+   assign qn = ~q;
+endmodule
+
+////// Write Verilog code for a JK flip-flop using behavioral modeling ? ///////////
+
+module jk_ff(
+    input clk,
+    input rst,
+    input j,k,
+    output reg q,
+    output qn
+    );
+    
+    always@(posedge clk) begin
+        if(rst) 
+            q = 0;
+        else begin
+            case({j,k})
+                2'b00: q <= q;
+                2'b01: q <= 0;
+                2'b10: q <= 1;
+                2'b11: q <= ~q;
+             endcase
+        end
+    end
+    
+    assign qn = ~q;
+endmodule
+
+///////// Write Verilog code for a T flip-flop using a D flip-flop ? ////////////
+
+module t_ff_using_d_ff(
+    input clk,
+    input rst,
+    input t,
+    output reg q,
+    output qn 
+    );
+    
+    always@(posedge clk) begin
+        if(rst) begin
+            q = 0;
+        end else begin
+            q <= t^q;
+        end
+    end
+    
+    assign qn = ~q;
+endmodule
+
+///////// Write Verilog code for a 4-bit register using D flip-flops ? ///////////
+
+module d_ff_4bit(
+    input clk,
+    input rst,
+    input [3:0] d,
+    output reg q,
+    output qn
+    );
+    
+    always@(posedge clk) begin
+        if (rst) begin
+            q = 0;
+        end else begin
+            q <= d;
+        end
+    end
+    assign qn = ~q;
+endmodule
+
+/////////////  Write Verilog code for a D flip-flop with synchronous reset and enable ? ////////
+
+module d_ff_en(
+    input clk,
+    input rst,
+    input en,
+    input d,
+    output reg q,
+    output qn
+    );
+
+    always@(posedge clk) begin
+        if (rst) begin
+            q = 0;
+        end else
+            if (en)
+                q <= d;
+            else
+                q <= q;
+    end
+    
+    assign qn = ~q;
+endmodule
+
