@@ -1,0 +1,457 @@
+//////// Implement a vending machine controller in Verilog that dispenses a product when a certain coin sequence is detected? ////////
+
+/* 
+Ok, Let's design for cool drink which was 20rs (User allowed to give exact amount of money). So user can give:
+                1. 5rs coins 4 times 
+                        or
+                2. Two 10rs coins
+                        or 
+                3. Two 5rs and one 10rs
+                        or
+                4. 20rs coin 
+After 5sec given it will go to reset state 
+Note: I mention only coins, it can be notes also.
+
+*/
+
+module vending_machine (
+        input clk,
+        input rst,
+        input [4:0]money,           // money given
+        output reg vending_out      // output vending machine
+        );
+        
+        reg [2:0] count; // used at s20 state to stay for 4 secs and after that go to s0 state
+        
+        // localparameter used bcz it will help to not override the things
+        localparam s0 = 3'b000;    // reset state
+        localparam s5 = 3'b001;    // 5rs state
+        localparam s10 = 3'b010;    // 10rs state 
+        localparam s15 = 3'b011;    // 15rs state
+        localparam s20 = 3'b100;    // 20rs state
+        
+        reg [2:0] ps, ns;      // present_state and next_state
+        
+        always@(posedge clk or posedge rst) begin
+            if(rst) begin
+                count <= 0; 
+                ps <= s0;
+            end else begin
+                ps <= ns; 
+                if(ps == s20) begin
+                    if (count == 3'd5)
+                        count <= 0;
+                    else
+                        count <= count + 1;
+                end
+            end  
+        end   
+         
+        always@(*) begin 
+            case(ps)
+                s0: begin
+                    case(money)
+                        5'd5: ns = s5;
+                        5'd10: ns = s10;
+                        5'd20: ns = s20;
+                        default : ns = s0;
+                    endcase
+                end
+                s5: begin
+                    case(money)
+                        5'd5: ns = s10;
+                        5'd10: ns = s15;
+                        default : ns = s5;
+                    endcase
+                end
+                s10: begin
+                    case(money)
+                        5'd5: ns = s15;
+                        5'd10: ns = s20;
+                        default : ns = s10;
+                    endcase
+                end
+                s15: begin
+                    case(money)
+                        5'd5: ns = s20;
+                        default : ns = s15;
+                    endcase
+                end
+                s20: begin
+                    if(count == 3'd5) 
+                        ns = s0;
+                    else
+                        ns = s20;
+                    
+                end
+                default : ns = s0;
+           endcase  
+        end
+        
+        always@(posedge clk or posedge rst) begin
+            if (rst) 
+                vending_out <= 0;
+            else
+                vending_out <= (ps == s20);
+        end
+endmodule
+
+///////////// Write a Verilog module for a simple 2-state FSM (e.g., LED ON/OFF controller)? ///////////
+module FSM(                           // Mealy Method
+    input clk,
+    input rst,
+    input switch,
+    output reg light
+    );
+    reg [1:0] present_state, next_state;
+    parameter off_state = 2'b00;
+    parameter on_state = 2'b11;
+    always@(posedge clk) begin
+        if (rst) begin
+            present_state = off_state;
+        end else begin
+            present_state <= next_state;
+        end
+   end
+   
+   always@(*) begin
+        case(present_state)
+            off_state: begin
+                light = 0;
+                if(switch) begin
+                    next_state = on_state;
+                    light = 1;
+                end else begin 
+                    next_state = off_state;
+                    light = 0;
+                end
+            end
+            
+            on_state: begin
+                if(switch) begin
+                    next_state = on_state;
+                    light = 1;
+                end else begin
+                    next_state = off_state;
+                    light = 0;
+                end
+            end
+            default: next_state = off_state;
+        endcase
+   end
+endmodule
+
+// Implement a Mod-2 counter using FSM principles in Verilog? ///
+
+module count(                         // Moore 
+    input clk,
+    input rst,
+    output reg count
+    );
+    reg [1:0] present_state, next_state;
+    parameter idle = 2'b00;
+    parameter count_state = 2'b11;
+    
+    always@(posedge clk) begin
+        if (rst) begin
+            present_state = idle;
+        end else begin
+            present_state <= next_state;
+            if(count < 1) begin
+                next_state <= count_state;
+            end else 
+                next_state <= idle;
+        end
+   end
+   always@(*) begin
+        case(present_state)
+            idle : begin
+                count = 0;
+            end
+            
+            count_state: begin
+                count = count + 1;
+            end 
+        endcase
+  end
+endmodule
+
+///// Write a Verilog code for a FSM that detects a specific 2-bit sequence (e.g., "10") in a serial data stream ? ///
+
+module seq(                         //mealy method
+       input clk,
+       input rst,
+       input serial_in,
+       output reg detector
+       );
+       
+    reg [1:0] present_state, next_state;
+    parameter idle = 2'b00;
+    parameter s1 = 2'b01;
+    
+    always@(posedge clk) begin
+        if (rst) 
+            present_state <= idle;
+        else
+            present_state <= next_state;
+   end
+   
+   always@(*) begin
+        case(present_state)
+            idle: begin
+                if(serial_in == 1) begin
+                    next_state = s1;
+                end else begin
+                    next_state = idle;
+                end
+            end
+            
+            s1: begin                
+                if(serial_in == 1) begin
+                    next_state = s1;
+                end else begin
+                    next_state = idle;
+                end
+           end
+           default: next_state = idle;
+        endcase
+  end
+  
+  always@(posedge clk) begin
+        if(rst) 
+            detector <= 0;
+        else
+            case(present_state) 
+                idle: detector <= 0;
+            
+                s1: begin
+                    if(serial_in == 0)
+                        detector <= 1;
+                    else
+                        detector <= 0;
+                end
+            endcase
+  end  
+endmodule
+
+/////// Design a Verilog FSM for a traffic light controller with three states (Red, Green, Yellow)?////////
+
+module traffic(                     //moore method
+    input clk,
+    input rst,
+    output reg red,
+    output reg green,
+    output reg yellow
+    );
+    
+    reg [2:0] count;
+    reg [1:0] state;
+    parameter RED = 2'b00;
+    parameter GREEN = 2'b01;
+    parameter YELLOW = 2'b10;
+    
+    always@(posedge clk or posedge rst) begin
+        if (rst) begin
+            count <= 0;
+            state <= RED;
+        end else begin
+            case(state)
+                RED : begin
+                    if (count < 3'd5) begin
+                        state <= RED;
+                        count <= count + 1;
+                    end else begin
+                        state <= GREEN;
+                        count <= 0;
+                    end
+               end
+               
+               GREEN : begin
+                    if (count < 3'd6) begin
+                        state <= GREEN;
+                        count <= count + 1;
+                    end else begin
+                        state <= YELLOW;
+                        count <= 0;
+                    end
+               end
+               
+               YELLOW : begin
+                    if (count < 3'd4) begin
+                        state <= YELLOW;
+                        count <= count + 1;
+                    end else begin
+                        state <= RED;
+                        count <= 0;
+                    end
+               end
+               
+               default : state <= RED;
+          endcase
+     end
+  end
+  
+  always@(*) begin
+        red = 0;
+        green = 0;
+        yellow = 0;
+        case(state)
+            RED : begin
+                red = 1;
+                green = 0;
+                yellow = 0;
+            end
+            
+            GREEN : begin
+                red = 0;
+                green = 1;
+                yellow = 0;
+            end
+            
+            YELLOW : begin
+                red = 0;
+                green = 0;
+                yellow = 1;
+            end
+            
+            default : begin
+                red = 0;
+                green = 0;
+                yellow = 0;
+            end
+       endcase
+  end          
+endmodule
+
+////////// Write Verilog for a 4-state elevator controller that moves between floors? ////
+
+module elevator(                // moore    
+        input clk,
+        input rst,
+        input [1:0]RF,
+        output reg [1:0] CF,
+        output reg door,
+        output reg stop,
+        output reg down,
+        output reg up
+        );
+        parameter GROUND = 2'b00;
+        parameter F1 = 2'b01;
+        parameter F2 = 2'b10;
+        parameter F3 = 2'b11;
+        reg [1:0] ps, ns;
+        
+        always@(posedge clk or posedge rst) begin
+            if(rst)
+                ps <= GROUND;
+                
+           else 
+                ps <= ns;
+        end
+        
+        always@(*) begin
+            case(ps)
+                    GROUND: ns = RF;
+                    F1: ns = RF;
+                    F2: ns = RF;
+                    F3: ns = RF;
+                    default : ns = GROUND;
+            endcase
+        end
+        
+       always@(posedge clk or posedge rst) begin
+            if(rst) begin
+                CF <=2'd0;
+                door <= 1;
+                stop <= 1;
+                down <= 0;
+                up <= 0;
+            end else begin
+                if ( ns < CF ) begin
+                    CF <= CF - 1;
+                    down <= 1;
+                    door <= 0;
+                    stop <= 0;
+                    up <= 0;
+               end else if ( ns > CF ) begin
+                    CF <= CF + 1;
+                    down <= 0;
+                    door <= 0;
+                    stop <= 0;
+                    up <= 1;
+              end else begin
+                    CF <= CF;
+                    door <= 1;
+                    stop <= 1;
+                    down <= 0;
+                    up <= 0;
+                            
+              end
+          end     
+    end             
+endmodule 
+
+/////////////Design a Moore FSM in Verilog that outputs '1' whenever the input sequence "101" is detected? ////
+
+module seq_dec(                          // moore method 
+    input clk,
+    input rst,
+    input in_seq,
+    output reg out_seq
+    );
+    
+    reg [1:0] ps, ns;
+    
+    parameter s0 = 2'b00;
+    parameter s1 = 2'b01;
+    parameter s2 = 2'b10;
+    parameter s3 = 2'b11;
+    
+    always@(posedge clk or posedge rst) begin
+        if(rst) 
+            ps <= s0;
+        else 
+            ps <= ns;
+    end
+    
+    always@(*) begin
+            case(ps)
+                s0: begin
+                    if(in_seq == 0) 
+                        ns = s0;
+                    else
+                        ns = s1;
+                end
+                s1: begin
+                    if(in_seq == 0) 
+                        ns = s2;
+                    else
+                        ns = s1;
+                end
+                s2: begin
+                    if(in_seq == 0) 
+                        ns = s0;
+                    else
+                        ns = s3;
+                end
+                s3: begin
+                    if(in_seq == 0) 
+                        ns = s2;
+                    else
+                        ns = s1;
+                end
+                default: ns = s0;
+           endcase
+       end
+    
+    always@(posedge clk or posedge rst) begin
+        if(rst)
+            out_seq <= 0;
+        else begin
+            case(ps)
+                s3 : out_seq <= 1;
+                default : out_seq <= 0;
+            endcase
+        end
+    end        
+endmodule
