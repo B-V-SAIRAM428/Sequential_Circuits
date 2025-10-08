@@ -48,7 +48,7 @@ module mod_6 (
             temp <= 0;
             count <= 0;
         end else begin
-            if (temp < 5 ) begin
+            if (temp < 6 ) begin
                 count <= count + 1;
                 temp <= temp + 1;
             end else
